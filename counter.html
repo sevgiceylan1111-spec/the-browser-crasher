@@ -1,32 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Counter Dashboard</title>
+    <title>Global Tracker</title>
     <style>
-        body { background: #000; color: #00ff41; font-family: monospace; text-align: center; padding-top: 100px; }
-        #total { font-size: 150px; font-weight: bold; border: 5px solid #00ff41; display: inline-block; padding: 40px; }
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; text-align: center; }
+        .container { border: 5px solid #00ff41; display: inline-block; padding: 40px; margin-top: 50px; box-shadow: 0 0 20px #00ff41; }
+        .num { font-size: 100px; font-weight: bold; margin: 0; }
+        .label { font-size: 20px; color: #ff0055; }
+        button { background: none; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>ACTIVE REPLICATORS</h1>
-    <div id="total">0</div>
+    <div class="container">
+        <div class="label">TOTAL TABS OPENED</div>
+        <div id="total" class="num">0</div>
+        
+        <hr style="border: 1px solid #00ff41; margin: 20px 0;">
+        
+        <div class="label">CURRENTLY ACTIVE</div>
+        <div id="active" class="num">0</div>
+
+        <br>
+        <button onclick="localStorage.clear(); location.reload();">RESET ALL DATA</button>
+    </div>
 
     <script>
         setInterval(() => {
-            let active = 0;
             const now = Date.now();
+            let activeCount = 0;
+            
+            // Get Total from storage
+            const totalOpened = localStorage.getItem('global_total') || 0;
+            document.getElementById('total').innerText = totalOpened;
+
+            // Calculate Active
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key.startsWith("tab_")) {
-                    // If the tab "pulsed" in the last 3 seconds, it's alive
-                    if (now - parseInt(localStorage.getItem(key)) < 3000) {
-                        active++;
+                    const lastPulse = parseInt(localStorage.getItem(key));
+                    if (now - lastPulse < 3000) {
+                        activeCount++;
                     } else {
                         localStorage.removeItem(key);
                     }
                 }
             }
-            document.getElementById('total').innerText = active;
+            document.getElementById('active').innerText = activeCount;
         }, 500);
     </script>
 </body>
