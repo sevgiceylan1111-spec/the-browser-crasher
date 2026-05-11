@@ -1,75 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Live Tab Tracker</title>
+    <title>Counter Dashboard</title>
     <style>
-        body { background: #050505; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; padding-top: 100px; }
-        .stat-box { border: 2px solid #00ff00; display: inline-block; padding: 20px; box-shadow: 0 0 20px #00ff00; }
-        #live-total { font-size: 120px; display: block; }
-        .glitch { animation: flash 0.1s infinite; color: #ff0055; }
-        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        body { background: #000; color: #00ff41; font-family: monospace; text-align: center; padding-top: 100px; }
+        #total { font-size: 150px; font-weight: bold; border: 5px solid #00ff41; display: inline-block; padding: 40px; }
     </style>
 </head>
 <body>
-
-    <div class="stat-box">
-        <h1 id="status">SCANNING BROWSER...</h1>
-        <span id="live-total">0</span>
-        <p>ACTIVE INSTANCES DETECTED</p>
-    </div>
+    <h1>ACTIVE REPLICATORS</h1>
+    <div id="total">0</div>
 
     <script>
-        const myID = Math.random().toString(36).substring(7); // Give this tab a unique ID
-        const display = document.getElementById('live-total');
-        const statusTxt = document.getElementById('status');
-
-        function pulse() {
-            // Tell the system this specific tab is still alive
-            localStorage.setItem('tab_pulse_' + myID, Date.now());
-            cleanupAndCount();
-        }
-
-        function cleanupAndCount() {
-            let activeCount = 0;
+        setInterval(() => {
+            let active = 0;
             const now = Date.now();
-
-            // Loop through everything in storage
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                if (key.startsWith('tab_pulse_')) {
-                    const lastPulse = parseInt(localStorage.getItem(key));
-                    
-                    // If a tab hasn't pulsed in 3 seconds, it's probably closed/crashed
-                    if (now - lastPulse > 3000) {
-                        localStorage.removeItem(key);
+                if (key.startsWith("tab_")) {
+                    // If the tab "pulsed" in the last 3 seconds, it's alive
+                    if (now - parseInt(localStorage.getItem(key)) < 3000) {
+                        active++;
                     } else {
-                        activeCount++;
+                        localStorage.removeItem(key);
                     }
                 }
             }
-            display.innerText = activeCount;
-        }
-
-        // Detect the Browser
-        const ua = navigator.userAgent;
-        if (ua.includes("Edg/")) statusTxt.innerText = "EDGE DETECTED";
-        else if (ua.includes("OPR/")) statusTxt.innerText = "OPERA DETECTED";
-        else statusTxt.innerText = "CHROME DETECTED";
-
-        // The "Chain Reaction" Spawner
-        function spawn() {
-            // This opens the exact same file to keep the loop going
-            window.open(window.location.href, '_blank');
-        }
-
-        // Run pulse every second
-        setInterval(pulse, 1000);
-        
-        // Try to spawn 3 per second (Only works if you allow popups once!)
-        setInterval(spawn, 333);
-
-        // Initial pulse
-        pulse();
+            document.getElementById('total').innerText = active;
+        }, 500);
     </script>
 </body>
 </html>
