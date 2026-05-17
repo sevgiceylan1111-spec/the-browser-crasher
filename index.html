@@ -1,37 +1,47 @@
 <!DOCTYPE html>
-<html>
-<head><title>Replicator</title></head>
-<body style="background:#000;color:red;font-family:monospace;text-align:center;">
-    <h2>REPLICATING...</h2>
-    <script>
-        const myID = "tab_" + Math.random().toString(36).substr(2, 9);
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Controller</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        .control-panel { background: #f4f4f4; padding: 20px; border-radius: 8px; }
+        button { padding: 10px 15px; font-size: 16px; cursor: pointer; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Main Application Controller</h1>
+    
+    <div class="control-panel">
+        <p>Use the buttons below to open and update the secondary workspace view.</p>
         
-        // 1. Increment Total
-        let total = parseInt(localStorage.getItem('global_total')) || 0;
-        localStorage.setItem('global_total', total + 1);
+        <!-- Requires user interaction to comply with browser safety standards -->
+        <button onclick="launchWorkspace()">Open Workspace</button>
+        <button onclick="updateWorkspace()">Send Update</button>
+    </div>
 
-        // 2. Heartbeat
-        setInterval(() => {
-            localStorage.setItem(myID, Date.now());
-        }, 1000);
+    <script>
+        let myWindow = null;
 
-        // 3. Spawner (3 per second)
-        setInterval(() => {
-            window.open("index.html", "_blank");
-        }, 333); 
+        function launchWorkspace() {
+            // Using a unique name ("SubWindow") ensures only one instance opens
+            myWindow = window.open("workspace.html", "SubWindow", "width=500,height=400");
+        }
 
-        // 4. Emergency Reset: If this is the ONLY tab left and it closes, clear everything
-        window.onbeforeunload = function() {
-            localStorage.removeItem(myID);
-            // We check if any other tabs are left. If not, reset the total.
-            let remaining = 0;
-            for(let i=0; i<localStorage.length; i++) {
-                if(localStorage.key(i).startsWith("tab_")) remaining++;
+        function updateWorkspace() {
+            if (myWindow && !myWindow.closed) {
+                // Modifies the content of the second page dynamically
+                myWindow.document.body.style.backgroundColor = "#e0f7fa";
+                const statusDiv = myWindow.document.getElementById("status");
+                if (statusDiv) {
+                    statusDiv.innerText = "Status: Updated by the Controller Page!";
+                }
+            } else {
+                alert("Please open the workspace window first.");
             }
-            if(remaining <= 0) {
-                localStorage.setItem('global_total', 0);
-            }
-        };
+        }
     </script>
+
 </body>
 </html>
