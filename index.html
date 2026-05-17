@@ -2,44 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Main Controller</title>
+    <title>Notification Controller</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-        .control-panel { background: #f4f4f4; padding: 20px; border-radius: 8px; }
-        button { padding: 10px 15px; font-size: 16px; cursor: pointer; margin-right: 10px; }
+        body { font-family: sans-serif; margin: 40px; }
+        .card { border: 1px solid #ccc; padding: 20px; border-radius: 8px; max-width: 400px; }
+        button { padding: 10px 15px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h1>Main Application Controller</h1>
-    
-    <div class="control-panel">
-        <p>Use the buttons below to open and update the secondary workspace view.</p>
-        
-        <!-- Requires user interaction to comply with browser safety standards -->
-        <button onclick="launchWorkspace()">Open Workspace</button>
-        <button onclick="updateWorkspace()">Send Update</button>
+    <div class="card">
+        <h2>Web Notifications</h2>
+        <p>To receive updates from this application, please enable notification permissions.</p>
+        <button onclick="requestNotificationPermission()">Enable Notifications</button>
     </div>
 
     <script>
-        let myWindow = null;
-
-        function launchWorkspace() {
-            // Using a unique name ("SubWindow") ensures only one instance opens
-            myWindow = window.open("workspace.html", "SubWindow", "width=500,height=400");
-        }
-
-        function updateWorkspace() {
-            if (myWindow && !myWindow.closed) {
-                // Modifies the content of the second page dynamically
-                myWindow.document.body.style.backgroundColor = "#e0f7fa";
-                const statusDiv = myWindow.document.getElementById("status");
-                if (statusDiv) {
-                    statusDiv.innerText = "Status: Updated by the Controller Page!";
-                }
-            } else {
-                alert("Please open the workspace window first.");
+        function requestNotificationPermission() {
+            // Check if the browser supports notifications
+            if (!("Notification" in window)) {
+                alert("This browser does not support desktop notifications.");
+                return;
             }
+
+            // Request permission from the user
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
+                    // Open the second page to manage or view alerts
+                    window.open("alerts.html", "_blank");
+                } else {
+                    console.log("Notification permission denied.");
+                }
+            });
         }
     </script>
 
