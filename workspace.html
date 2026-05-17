@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secondary Workspace</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; transition: background-color 0.5s ease; }
+        .card { border: 2px solid #333; padding: 20px; border-radius: 5px; background: white; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Secondary Workspace View</h2>
+        <p id="status">Status: Waiting for updates...</p>
+        <p id="opener-info"></p>
+    </div>
+
+    <script>
+        // Check if this window was opened by another page
+        if (window.opener) {
+            document.getElementById("opener-info").innerText = "Connected to Main Controller: Yes";
+        } else {
+            document.getElementById("opener-info").innerText = "Connected to Main Controller: No (Opened independently)";
+        }
+    </script>
+
+</body>
+</html>
