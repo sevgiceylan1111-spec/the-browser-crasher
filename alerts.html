@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Notification Center</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; }
+    </style>
+</head>
+<body>
+
+    <h1>Notification Workspace</h1>
+    <p>If permission was granted, a standard system notification will appear.</p>
+
+    <script>
+        // Check if permission is already granted
+        if (Notification.permission === "granted") {
+            // Create and display a standard notification
+            const sampleNotification = new Notification("System Update", {
+                body: "This is a standard web application notification.",
+                icon: "https://example.com/icon.png" // Optional URL to an icon image
+            });
+
+            // Optional: Handle clicking on the notification
+            sampleNotification.onclick = function() {
+                window.focus();
+                this.close();
+            };
+        } else {
+            console.log("Notification permission is not enabled.");
+        }
+    </script>
+
+</body>
+</html>
